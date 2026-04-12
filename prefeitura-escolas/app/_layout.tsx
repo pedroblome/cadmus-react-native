@@ -11,12 +11,6 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 import '@/global.css';
 
-// Inicializa o MSW apenas em desenvolvimento
-if (__DEV__) {
-  const { server } = require('@/src/infra/msw/server');
-  server.listen({ onUnhandledRequest: 'bypass' });
-}
-
 export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary,
@@ -61,11 +55,15 @@ function RootLayoutNav() {
     
     <GluestackUIProvider mode="dark">
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
-    </ThemeProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="schools/[id]"
+            options={{ headerBackTitle: 'Voltar', headerShown: true }}
+          />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        </Stack>
+      </ThemeProvider>
     </GluestackUIProvider>
   
   );
