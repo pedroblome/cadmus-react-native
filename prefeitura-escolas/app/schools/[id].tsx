@@ -5,6 +5,7 @@ import {
   FlatList,
   ActivityIndicator,
   Pressable,
+  ScrollView,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useSchoolsStore } from '@/src/features/schools/store/schoolsStore';
@@ -29,15 +30,19 @@ export default function SchoolDetailScreen() {
   const school = useSchoolsStore((s) => s.schools.find((sc) => sc.id === id));
 
   const [shiftFilter, setShiftFilter] = useState<Shift | null>(null);
+  const [yearFilter, setYearFilter] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingClass, setEditingClass] = useState<SchoolClass | null>(null);
 
-  const { classes, isLoading, isSubmitting, error, create, update, remove } = useClasses({
-    schoolId: id,
-    shiftFilter,
-  });
+  const { classes, totalCount, isLoading, isSubmitting, error, availableYears, create, update, remove } =
+    useClasses({ schoolId: id, shiftFilter, yearFilter });
 
-  const hasFilter = shiftFilter !== null;
+  const hasFilter = shiftFilter !== null || yearFilter !== null;
+
+  const clearFilters = () => {
+    setShiftFilter(null);
+    setYearFilter(null);
+  };
 
   const openCreate = () => {
     setEditingClass(null);
@@ -71,7 +76,6 @@ export default function SchoolDetailScreen() {
 
   return (
     <>
-      {/* Configura o título do header dinamicamente */}
       <Stack.Screen options={{ title: school.name }} />
 
       <View className="flex-1 bg-background-0">
@@ -82,41 +86,104 @@ export default function SchoolDetailScreen() {
           </Text>
         </View>
 
-        {/* Filtro por turno */}
-        <View className="px-4 py-3">
-          <View className="flex-row gap-2">
-            {SHIFTS.map((s) => {
-              const key = String(s);
-              const isActive = shiftFilter === s;
-              return (
-                <Pressable
-                  key={key}
-                  onPress={() => setShiftFilter(s)}
-                  className={`px-3 h-8 rounded-full items-center justify-center border ${
-                    isActive
-                      ? 'bg-primary-500 border-primary-500'
-                      : 'bg-background-0 border-outline-200'
-                  }`}
-                >
-                  <Text
-                    className={`text-xs font-medium ${
-                      isActive ? 'text-typography-0' : 'text-typography-600'
+        {/* Painel de filtros */}
+        <View className="px-4 pt-3 pb-2 border-b border-outline-50">
+          {/* Filtro por turno */}
+          <Text className="text-typography-500 text-xs font-medium mb-2 uppercase tracking-wider">
+            Turno
+          </Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3">
+            <View className="flex-row gap-2 pr-2">
+              {SHIFTS.map((s) => {
+                const key = String(s);
+                const isActive = shiftFilter === s;
+                return (
+                  <Pressable
+                    key={key}
+                    onPress={() => setShiftFilter(s)}
+                    className={`px-3 h-8 rounded-full items-center justify-center border ${
+                      isActive
+                        ? 'bg-primary-500 border-primary-500'
+                        : 'bg-background-0 border-outline-200'
                     }`}
                   >
-                    {SHIFT_LABEL[key]}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
+                    <Text
+                      className={`text-xs font-medium ${
+                        isActive ? 'text-typography-0' : 'text-typography-600'
+                      }`}
+                    >
+                      {SHIFT_LABEL[key]}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </ScrollView>
+
+          {/* Filtro por ano letivo */}
+          {availableYears.length > 0 && (
+            <>
+              <Text className="text-typography-500 text-xs font-medium mb-2 uppercase tracking-wider">
+                Ano letivo
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-1">
+                <View className="flex-row gap-2 pr-2">
+                  {/* Opção "Todos" */}
+                  <Pressable
+                    onPress={() => setYearFilter(null)}
+                    className={`px-3 h-8 rounded-full items-center justify-center border ${
+                      yearFilter === null
+                        ? 'bg-primary-500 border-primary-500'
+                        : 'bg-background-0 border-outline-200'
+                    }`}
+                  >
+                    <Text
+                      className={`text-xs font-medium ${
+                        yearFilter === null ? 'text-typography-0' : 'text-typography-600'
+                      }`}
+                    >
+                      Todos
+                    </Text>
+                  </Pressable>
+                  {availableYears.map((year) => {
+                    const isActive = yearFilter === year;
+                    return (
+                      <Pressable
+                        key={year}
+                        onPress={() => setYearFilter(year)}
+                        className={`px-3 h-8 rounded-full items-center justify-center border ${
+                          isActive
+                            ? 'bg-primary-500 border-primary-500'
+                            : 'bg-background-0 border-outline-200'
+                        }`}
+                      >
+                        <Text
+                          className={`text-xs font-medium ${
+                            isActive ? 'text-typography-0' : 'text-typography-600'
+                          }`}
+                        >
+                          {year}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </ScrollView>
+            </>
+          )}
         </View>
 
-        {/* Contador */}
-        <View className="px-4 pb-2">
+        {/* Contador + limpar filtros */}
+        <View className="px-4 py-2 flex-row items-center justify-between">
           <Text className="text-typography-400 text-xs">
             {classes.length === 1 ? '1 turma' : `${classes.length} turmas`}
-            {hasFilter ? ' com este filtro' : ' cadastrada(s)'}
+            {hasFilter ? ` de ${totalCount}` : ' cadastrada(s)'}
           </Text>
+          {hasFilter && (
+            <Pressable onPress={clearFilters} hitSlop={8}>
+              <Text className="text-primary-600 text-xs font-medium">✕ Limpar filtros</Text>
+            </Pressable>
+          )}
         </View>
 
         {/* Lista */}
