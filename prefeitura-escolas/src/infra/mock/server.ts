@@ -9,12 +9,21 @@ import { School, CreateSchoolInput, UpdateSchoolInput } from '@/src/features/sch
 import { SchoolClass, CreateClassInput, UpdateClassInput } from '@/src/features/classes/types/class';
 
 // ─── Estado em memória ───────────────────────────────────────────────────────
-let schools: School[] = [...seedSchools];
-let classes: SchoolClass[] = [...seedClasses];
+// Guardamos no global para sobreviver ao Fast Refresh: o hot reload re-avalia o
+// módulo, mas o objeto global persiste enquanto o app estiver rodando.
+type MockGlobal = typeof globalThis & {
+  __mockSchools?: School[];
+  __mockClasses?: SchoolClass[];
+};
+const g = global as MockGlobal;
+if (!g.__mockSchools) g.__mockSchools = [...seedSchools];
+if (!g.__mockClasses) g.__mockClasses = [...seedClasses];
 
 function syncClassCount(schoolId: string) {
-  schools = schools.map((s) =>
-    s.id === schoolId ? { ...s, classCount: classes.filter((c) => c.schoolId === schoolId).length } : s
+  g.__mockSchools = g.__mockSchools!.map((s) =>
+    s.id === schoolId
+      ? { ...s, classCount: g.__mockClasses!.filter((c) => c.schoolId === schoolId).length }
+      : s
   );
 }
 
@@ -31,6 +40,8 @@ function noContent() { return new Response(null, { status: 204 }); }
 // ─── Roteador ────────────────────────────────────────────────────────────────
 async function router(url: URL, method: string, body: unknown): Promise<Response | null> {
   const p = url.pathname;
+  const schools = g.__mockSchools!;
+  const classes = g.__mockClasses!;
 
   // ── /api/schools ──
   if (p === '/api/schools' && method === 'GET') {
@@ -40,7 +51,7 @@ async function router(url: URL, method: string, body: unknown): Promise<Response
     const input = body as CreateSchoolInput;
     const now = new Date().toISOString();
     const school: School = { id: String(Date.now()), ...input, classCount: 0, createdAt: now, updatedAt: now };
-    schools = [...schools, school];
+    g.__mockSchools = [...schools, school];
     return json(school, 201);
   }
 
@@ -56,13 +67,13 @@ async function router(url: URL, method: string, body: unknown): Promise<Response
       const idx = schools.findIndex((s) => s.id === id);
       if (idx === -1) return notFound();
       const updated = { ...schools[idx], ...input, updatedAt: new Date().toISOString() };
-      schools = schools.map((s) => (s.id === id ? updated : s));
+      g.__mockSchools = schools.map((s) => (s.id === id ? updated : s));
       return json(updated);
     }
     if (method === 'DELETE') {
       if (!schools.some((s) => s.id === id)) return notFound();
-      schools = schools.filter((s) => s.id !== id);
-      classes = classes.filter((c) => c.schoolId !== id);
+      g.__mockSchools = schools.filter((s) => s.id !== id);
+      g.__mockClasses = classes.filter((c) => c.schoolId !== id);
       return noContent();
     }
   }
@@ -76,7 +87,7 @@ async function router(url: URL, method: string, body: unknown): Promise<Response
     const input = body as CreateClassInput;
     const now = new Date().toISOString();
     const cls: SchoolClass = { id: String(Date.now()), ...input, createdAt: now, updatedAt: now };
-    classes = [...classes, cls];
+    g.__mockClasses = [...classes, cls];
     syncClassCount(input.schoolId);
     return json(cls, 201);
   }
@@ -93,13 +104,13 @@ async function router(url: URL, method: string, body: unknown): Promise<Response
       const idx = classes.findIndex((c) => c.id === id);
       if (idx === -1) return notFound();
       const updated = { ...classes[idx], ...input, updatedAt: new Date().toISOString() };
-      classes = classes.map((c) => (c.id === id ? updated : c));
+      g.__mockClasses = classes.map((c) => (c.id === id ? updated : c));
       return json(updated);
     }
     if (method === 'DELETE') {
       const cls = classes.find((c) => c.id === id);
       if (!cls) return notFound();
-      classes = classes.filter((c) => c.id !== id);
+      g.__mockClasses = classes.filter((c) => c.id !== id);
       syncClassCount(cls.schoolId);
       return noContent();
     }
@@ -110,6 +121,10 @@ async function router(url: URL, method: string, body: unknown): Promise<Response
 
 // ─── Interceptor ─────────────────────────────────────────────────────────────
 export function setupMockServer() {
+  // Evita envolver o fetch múltiplas vezes em hot reloads sucessivos
+  if ((global as MockGlobal & { __mockInstalled?: boolean }).__mockInstalled) return;
+  (global as MockGlobal & { __mockInstalled?: boolean }).__mockInstalled = true;
+
   const originalFetch = global.fetch;
 
   global.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
