@@ -3,7 +3,7 @@ import { useSchoolsStore } from '../store/schoolsStore';
 import { CreateSchoolInput, UpdateSchoolInput } from '../types/school';
 
 export function useSchools(searchQuery = '') {
-  const { schools, isLoading, error, fetchSchools, addSchool, updateSchool, removeSchool } =
+  const { schools, isLoading, error, isOffline, fetchSchools, addSchool, updateSchool, removeSchool } =
     useSchoolsStore();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,6 +48,7 @@ export function useSchools(searchQuery = '') {
     totalCount: schools.length,
     isLoading,
     isSubmitting,
+    isOffline,
     error,
     create,
     update,
