@@ -4,6 +4,20 @@ Aplicativo móvel para gerenciamento de escolas públicas e turmas, desenvolvido
 
 ---
 
+## 📱 Screenshots
+
+<p align="center">
+  <img src="../images-readme/WhatsApp Image 2026-04-13 at 10.11.25 (1).jpeg" width="180" alt="Lista de escolas" />
+  <img src="../images-readme/WhatsApp Image 2026-04-13 at 10.11.22 (1).jpeg" width="180" alt="Modal nova escola" />
+  <img src="../images-readme/WhatsApp Image 2026-04-13 at 10.11.22 (2).jpeg" width="180" alt="Confirmação de exclusão" />
+  <img src="../images-readme/WhatsApp Image 2026-04-13 at 10.11.25.jpeg" width="180" alt="Lista de turmas" />
+  <img src="../images-readme/WhatsApp Image 2026-04-13 at 10.11.24.jpeg" width="180" alt="Filtro de turmas" />
+  <img src="../images-readme/WhatsApp Image 2026-04-13 at 10.11.23.jpeg" width="180" alt="Modal nova turma" />
+  <img src="../images-readme/WhatsApp Image 2026-04-13 at 10.11.22.jpeg" width="180" alt="Tela Sobre" />
+</p>
+
+---
+
 ## 📋 Sobre o Projeto
 
 A prefeitura de uma cidade no interior do país enfrenta dificuldades no controle das escolas públicas. Este aplicativo centraliza o cadastro das escolas e de suas turmas, substituindo o controle manual em planilhas Excel.
