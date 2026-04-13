@@ -1,6 +1,6 @@
-import React from 'react';
-import { Pressable, View, Text, Alert } from 'react-native';
-import { School } from '../types/school';
+import React from "react";
+import { Pressable, View, Text, Alert } from "react-native";
+import { School } from "../types/school";
 
 interface SchoolCardProps {
   school: School;
@@ -9,15 +9,21 @@ interface SchoolCardProps {
   onDelete: () => void;
 }
 
-export function SchoolCard({ school, onPress, onEdit, onDelete }: SchoolCardProps) {
+export function SchoolCard({
+  school,
+  onPress,
+  onEdit,
+  onDelete,
+}: SchoolCardProps) {
   const handleDelete = () => {
+    console.log("handleDelete called for school:", school);
     Alert.alert(
-      'Excluir escola',
+      "Excluir escola",
       `Deseja excluir "${school.name}"? As turmas vinculadas também serão removidas.`,
       [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Excluir', style: 'destructive', onPress: onDelete },
-      ]
+        { text: "Cancelar", style: "cancel" },
+        { text: "Excluir", style: "destructive", onPress: onDelete },
+      ],
     );
   };
 
@@ -60,11 +66,11 @@ export function SchoolCard({ school, onPress, onEdit, onDelete }: SchoolCardProp
       {/* Rodapé: contador de turmas */}
       <View className="flex-row items-center justify-between border-t border-outline-100 pt-2">
         <Text className="text-typography-400 text-xs">
-          {school.classCount === 1
-            ? '1 turma'
-            : `${school.classCount} turmas`}
+          {school.classCount === 1 ? "1 turma" : `${school.classCount} turmas`}
         </Text>
-        <Text className="text-primary-600 text-xs font-medium">Ver turmas →</Text>
+        <Text className="text-primary-600 text-xs font-medium">
+          Ver turmas →
+        </Text>
       </View>
     </Pressable>
   );

@@ -21,6 +21,10 @@ export const unstable_settings = {
   initialRouteName: '(tabs)',
 };
 
+// Mock server — intercepta fetch() em desenvolvimento (substitui MSW, incompatível com Hermes)
+import { setupMockServer } from '@/src/infra/mock/server';
+if (__DEV__) setupMockServer();
+
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
